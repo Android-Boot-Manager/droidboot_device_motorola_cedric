@@ -34,7 +34,7 @@
 #include <debug.h>
 #include <printf.h>
 #include <arch/arm/dcc.h>
-#include <dev/fbcon.h>
+//#include <dev/fbcon.h>
 #include <dev/uart.h>
 #include <platform/timer.h>
 #include <platform.h>
@@ -105,14 +105,14 @@ unsigned lk_log_getsize(void) {
 }
 #endif /* WITH_DEBUG_LOG_BUF */
 
-void display_fbcon_message(char *str)
-{
-#if ENABLE_FBCON_LOGGING
-	while(*str != 0) {
-		fbcon_putc(*str++);
-	}
-#endif
-}
+//void display_fbcon_message(char *str)
+//{
+//#if ENABLE_FBCON_LOGGING
+	//while(*str != 0) {
+		//fbcon_putc(*str++);
+	//}
+//#endif
+//}
 
 void _dputc(char c)
 {
@@ -128,9 +128,9 @@ void _dputc(char c)
 #if WITH_DEBUG_UART
 	uart_putc(0, c);
 #endif
-#if WITH_DEBUG_FBCON && WITH_DEV_FBCON
-	fbcon_putc(c);
-#endif
+//#if WITH_DEBUG_FBCON && WITH_DEV_FBCON
+	//fbcon_putc(c);
+//#endif
 #if WITH_DEBUG_JTAG
 	jtag_dputc(c);
 #endif
