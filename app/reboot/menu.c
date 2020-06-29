@@ -237,25 +237,23 @@ int menu_thread(void *arg) {
     lv_indev_t * my_indev = lv_indev_drv_register(&indev_drv);
     lv_indev_set_group(my_indev, g1);
 
-//Add list buttons
+
     lv_obj_set_size(list1, 1080, 1800);
     lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 100);
+//Add list buttons
+    int ret;
+	struct boot_entry *entry_list = NULL;
+	ret = parse_boot_entries(&entry_list);
+	if (ret < 0) {
+		printf("falied to parse boot entries: %d\n", ret);
+		return;
+	}
     lv_obj_t * list_btn;
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE, "VollaOS");
-    lv_obj_set_event_cb(list_btn, event_handler);
-    list_btn = lv_list_add_btn(list1,  LV_SYMBOL_FILE, "Ubuntu touch");
-    lv_obj_set_event_cb(list_btn, event_handler);
-    
-/*	while(1) {
-		if(handle_keys(list1)) {
-			//draw_menu();
-			    lv_tick_inc(5);
-    lv_task_handler();
-    thread_sleep(rand() % 5);
-		}
-
-		//thread_sleep(KEY_DETECT_FREQUENCY);
-	}*/
+    int i =0;
+	for (i = 0; i < num_of_boot_entries; i++) {
+		list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE,(entry_list + i)->title);
+        lv_obj_set_event_cb(list_btn, event_handler);
+	}
 }
 
 // hardcoded functions
