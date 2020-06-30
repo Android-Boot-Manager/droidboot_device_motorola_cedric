@@ -39,4 +39,4 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          New lk2nd build for Moto G5 cedric is ready. Check it here https://github.com/Android-Boot-Manager/droidboot_device_motorola_cedric/runs/${{  github.action }}
+          New lk2nd build for Moto G5 cedric is ready. Check it here https://github.com/Android-Boot-Manager/droidboot_device_motorola_cedric/runs/${{  github.workflow }}
