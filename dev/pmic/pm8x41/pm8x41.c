@@ -716,21 +716,14 @@ void pm8x41_config_output_mpp(struct pm8x41_mpp *mpp)
 
 uint8_t pm660_get_is_cold_boot()
 {
-	if (REG_READ(PM660_PON_WARMBOOT_STATUS1)) {
-		dprintf(INFO,"%s: Warm boot\n", __func__);
-		return 0;
-	}
-	return 1;
+
+	return 0;
 }
 
 uint8_t pm8x41_get_is_cold_boot()
 {
-	if (REG_READ(PON_WARMBOOT_STATUS1) || REG_READ(PON_WARMBOOT_STATUS2)) {
-		dprintf(INFO,"%s: Warm boot\n", __func__);
-		return 0;
-	}
-	dprintf(INFO,"%s: cold boot\n", __func__);
-	return 1;
+
+	return 0;
 }
 
 /* api to control lnbb clock */

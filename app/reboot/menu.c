@@ -26,6 +26,7 @@ struct hardcoded_entry {
 };
 bool up = false;
 bool down = false;
+bool enter = false;
 bool p = false;
 //FUGLY
 #define TIMEOUT_TEXT "press volume down for boot menu"
@@ -175,7 +176,10 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
         up=true;
         p=true;
     }
-    
+    if(power_button_pressed){
+        enter=true;
+        p=true;
+    }
     if(volume_down_pressed){
         down=true;
         p=true;
@@ -184,10 +188,16 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
         data->key = LV_KEY_UP;            /*Get the last pressed or released key*/
         printf("up");
     }
+    if(enter){
+        data->key = LV_KEY_ENTER;            /*Get the last pressed or released key*/
+        printf("up");
+    }
+
     if(down){
         data->key = LV_KEY_DOWN;            /*Get the last pressed or released key*/
         printf("down");
     }
+
     if(p){
         data->state = LV_INDEV_STATE_PR;
         printf("press\n");
@@ -198,6 +208,7 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
         //printf("release\n");
         up=false;
         down=false;
+        enter=false;
     }
   return false; /*No buffering now so no more data read*/
 }
@@ -256,6 +267,8 @@ int menu_thread(void *arg) {
 		list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE,(entry_list + i)->title);
         lv_obj_set_event_cb(list_btn, event_handler);
 	}
+    list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE,"Extras");
+    lv_obj_set_event_cb(list_btn, event_handler);
 }
 
 // hardcoded functions
