@@ -9,14 +9,15 @@ The real Android boot images are placed into the unused OEM partition.
 
 Important: This fork is used by Android Boot Manager and has code specific to it. It will not work without. Take a look at https://github.com/Junak/lk2nd
 
+------
+Be sure to check out our [wiki](https://github.com/Android-Boot-Manager/App/wiki)!
+
+------
 ### Supported devices
 - Moto G5 - cedric
 
 ## Installation
 Install using our Android App.
-
-## How it works
-We use LVGL to draw the boot menu, lk-ext2 to read the OEM partition and the normal booting skills of little kernel to start Android (or other OSes).
 
 ## Building
 ```
