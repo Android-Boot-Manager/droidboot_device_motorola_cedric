@@ -16,6 +16,8 @@
 #include "boot.h"
 #include "config.h"
 
+lv_obj_t *menu = NULL;
+lv_obj_t *booting = NULL;
 int num_of_boot_entries;
 
 struct boot_entry *entry_list;
@@ -70,6 +72,9 @@ static void event_handler(lv_obj_t * obj, lv_event_t event)
     if(event == LV_EVENT_CLICKED) {
         int index = lv_list_get_btn_index(NULL, obj);
         struct boot_entry *entry = entry_list + index;
+        booting = lv_obj_create(NULL, NULL);
+        lv_scr_load(booting);
+        lv_obj_del(menu);
         boot_to_entry(entry);
     }
 }
@@ -122,6 +127,8 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
 }
 
 int menu_thread(void *arg) {
+    menu = lv_obj_create(NULL, NULL);
+    lv_scr_load(menu);
     //Get entry list and num of boot entries
     num_of_boot_entries = get_entry_count();
 	entry_list = (struct boot_entry *)arg;
@@ -130,7 +137,7 @@ int menu_thread(void *arg) {
 	fbcon_clear();
     lv_init();
     fbcon_clear();
-thread_sleep(300);
+    thread_sleep(300);
     //Set up buffer and init screen
     static lv_disp_buf_t disp_buf;
     static lv_color_t buf[LV_HOR_RES_MAX * 10]; /*Declare a buffer for 10 lines*/
@@ -215,5 +222,4 @@ thread_sleep(300);
     //label1 = lv_label_create(cont, NULL);
     //lv_label_set_text_fmt(label1, "%d%%", output);
     //lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_RIGHT, -150, 55);
-   
 }
