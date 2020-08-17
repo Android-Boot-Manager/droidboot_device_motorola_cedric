@@ -16,20 +16,22 @@
 #include "boot.h"
 #include "config.h"
 
-lv_obj_t *menu = NULL;
-lv_obj_t *booting = NULL;
-int num_of_boot_entries;
-
 struct boot_entry *entry_list;
 
 struct hardcoded_entry {
 	char *title;
 	void (*function)(void);
 };
+
 bool up = false;
 bool down = false;
 bool enter = false;
 bool p = false;
+
+int num_of_boot_entries;
+
+lv_obj_t *menu = NULL;
+lv_obj_t *booting = NULL;
 
 extern uint32_t target_volume_down(); //used in non-FUGLY code as well; commented out there, will use this
 
@@ -37,11 +39,6 @@ extern struct global_config global_config;
 
 void boot_from_mmc(void);
 void boot_recovery_from_mmc(void);
-#define HARDCODED_ENTRY_COUNT 1
-struct hardcoded_entry hardcoded_entry_list[HARDCODED_ENTRY_COUNT] = {
-	{.title = "'recovery' partition", .function = boot_recovery_from_mmc},
-};
-
 
 static int sleep_thread(void * arg) {
   /*Handle LitlevGL tasks (tickless mode)*/
@@ -55,16 +52,16 @@ static int sleep_thread(void * arg) {
 }
 
 void my_disp_flush(lv_disp_t * disp,
-  const lv_area_t * area, lv_color_t * color_p) {
-  uint x, y;
-  for (y = area -> y1; y <= area -> y2; y++) {
-    for (x = area -> x1; x <= area -> x2; x++) {
-      fbcon_draw_pixel(x, y, 0xff << 24 | color_p->ch.red << 16 | color_p->ch.green << 8 | color_p->ch.blue  ); /* Put a pixel to the display.*/
-      color_p++;
+    const lv_area_t * area, lv_color_t * color_p) {
+    uint x, y;
+    for (y = area -> y1; y <= area -> y2; y++) {
+      for (x = area -> x1; x <= area -> x2; x++) {
+        fbcon_draw_pixel(x, y, 0xff << 24 | color_p->ch.red << 16 | color_p->ch.green << 8 | color_p->ch.blue  ); /* Put a pixel to the display.*/
+        color_p++;
+      }
     }
-  }
-  fbcon_flush();
-  lv_disp_flush_ready(disp); /* Indicate you are ready with the flushing*/
+    fbcon_flush(); //Flush fbcon, to show evrything on screen
+    lv_disp_flush_ready(disp); /* Indicate you are ready with the flushing*/
 }
 
 static void event_handler(lv_obj_t * obj, lv_event_t event)
@@ -72,9 +69,6 @@ static void event_handler(lv_obj_t * obj, lv_event_t event)
     if(event == LV_EVENT_CLICKED) {
         int index = lv_list_get_btn_index(NULL, obj);
         struct boot_entry *entry = entry_list + index;
-        booting = lv_obj_create(NULL, NULL);
-        lv_scr_load(booting);
-        lv_obj_del(menu);
         boot_to_entry(entry);
     }
 }
@@ -99,21 +93,17 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
     }
     if(up){
         data->key = LV_KEY_UP;            /*Get the last pressed or released key*/
-        printf("up");
     }
     if(enter){
         data->key = LV_KEY_ENTER;            /*Get the last pressed or released key*/
-        printf("up");
     }
 
     if(down){
         data->key = LV_KEY_DOWN;            /*Get the last pressed or released key*/
-        printf("down");
     }
 
     if(p){
         data->state = LV_INDEV_STATE_PR;
-        printf("press\n");
         p=false;
     }
     else {
@@ -127,17 +117,21 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
 }
 
 int menu_thread(void *arg) {
+    //Create menu object
     menu = lv_obj_create(NULL, NULL);
+
+    //Load menu object
     lv_scr_load(menu);
+
     //Get entry list and num of boot entries
     num_of_boot_entries = get_entry_count();
 	entry_list = (struct boot_entry *)arg;
     
     //Clear screen and init LVGL
-	fbcon_clear();
     lv_init();
     fbcon_clear();
     thread_sleep(300);
+
     //Set up buffer and init screen
     static lv_disp_buf_t disp_buf;
     static lv_color_t buf[LV_HOR_RES_MAX * 10]; /*Declare a buffer for 10 lines*/
@@ -150,11 +144,16 @@ int menu_thread(void *arg) {
 
     //Create thread
     thread_resume(thread_create("sleeper", &sleep_thread, NULL, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE));
+
+    //Init lvgl theme
     LV_THEME_DEFAULT_INIT(LV_COLOR_GRAY, LV_COLOR_GRAY,
                           LV_THEME_MATERIAL_FLAG_DARK,
                           lv_theme_get_font_small(), lv_theme_get_font_normal(), lv_theme_get_font_subtitle(), lv_theme_get_font_title());
+
+    //FIXME: is this relly needed?
     fbcon_clear();
     thread_sleep(300);
+
     //Create window
     lv_obj_t * win = lv_win_create(lv_scr_act(), NULL);
 
@@ -183,6 +182,7 @@ int menu_thread(void *arg) {
     lv_obj_set_size(list1, 1075, 1750);
     lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
     lv_win_set_scrollbar_mode(win, LV_SCRLBAR_MODE_OFF);
+
     //Parse boot entries
     int ret;
 	struct boot_entry *entry_list = NULL;
