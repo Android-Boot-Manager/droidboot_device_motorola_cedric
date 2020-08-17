@@ -129,7 +129,8 @@ int menu_thread(void *arg) {
     //Clear screen and init LVGL
 	fbcon_clear();
     lv_init();
-  
+    fbcon_clear();
+thread_sleep(300);
     //Set up buffer and init screen
     static lv_disp_buf_t disp_buf;
     static lv_color_t buf[LV_HOR_RES_MAX * 10]; /*Declare a buffer for 10 lines*/
@@ -142,7 +143,11 @@ int menu_thread(void *arg) {
 
     //Create thread
     thread_resume(thread_create("sleeper", &sleep_thread, NULL, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE));
-
+    LV_THEME_DEFAULT_INIT(LV_COLOR_GRAY, LV_COLOR_GRAY,
+                          LV_THEME_MATERIAL_FLAG_DARK,
+                          lv_theme_get_font_small(), lv_theme_get_font_normal(), lv_theme_get_font_subtitle(), lv_theme_get_font_title());
+    fbcon_clear();
+    thread_sleep(300);
     //Create window
     lv_obj_t * win = lv_win_create(lv_scr_act(), NULL);
 
@@ -168,9 +173,9 @@ int menu_thread(void *arg) {
     lv_indev_set_group(my_indev, g1);
 
     //Set list size and align
-    lv_obj_set_size(list1, 1080, 1800);
-    lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 100);
-
+    lv_obj_set_size(list1, 1075, 1750);
+    lv_obj_align(list1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    lv_win_set_scrollbar_mode(win, LV_SCRLBAR_MODE_OFF);
     //Parse boot entries
     int ret;
 	struct boot_entry *entry_list = NULL;
@@ -189,6 +194,26 @@ int menu_thread(void *arg) {
 	}
 
     //Add "Extras" button
-    list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE,"Extras");
-    lv_obj_set_event_cb(list_btn, event_handler);
+    //list_btn = lv_list_add_btn(list1, LV_SYMBOL_FILE,"Extras");
+    //lv_obj_set_event_cb(list_btn, event_handler);
+    
+    //lv_obj_set_event_cb(list_btn, event_handler);
+    lv_obj_t * label1;
+    int output = 100;
+    lv_obj_t *cont;
+    /*if (output==0)
+        cont=lv_obj_get_parent(lv_win_add_btn(win, LV_SYMBOL_BATTERY_EMPTY));
+    if (output < 33 && output>0)
+        cont=lv_obj_get_parent(lv_win_add_btn(win, LV_SYMBOL_BATTERY_1));
+    if (output >=33 && output<66)
+        cont=lv_obj_get_parent(lv_win_add_btn(win, LV_SYMBOL_BATTERY_2));
+    if (output >=66 && output<99)
+        cont=lv_obj_get_parent(lv_win_add_btn(win, LV_SYMBOL_BATTERY_3));
+    if (output ==100) 
+        cont=(lv_obj_get_parent(lv_win_add_btn(win, LV_SYMBOL_BATTERY_FULL)));*/
+    lv_win_add_btn(win, LV_SYMBOL_BATTERY_FULL);
+    //label1 = lv_label_create(cont, NULL);
+    //lv_label_set_text_fmt(label1, "%d%%", output);
+    //lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_RIGHT, -150, 55);
+   
 }
