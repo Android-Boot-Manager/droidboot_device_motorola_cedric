@@ -102,7 +102,7 @@ int boot_to_entry(struct boot_entry *entry) {
 		char *linux = malloc(strlen("/boot/") + strlen(entry->linux) + 1);
 		char *initrd = malloc(strlen("/boot/") + strlen(entry->initrd) + 1);
 		char *dtb = malloc(strlen("/boot/") + strlen(entry->dtb) + 1);
-
+        char *cmdline = malloc(strlen(" ABM.bootloader=1") + strlen(entry->options) + 1);
 		if (!linux || !initrd || !dtb)
 			return ERR_NO_MEMORY;
 
@@ -112,8 +112,10 @@ int boot_to_entry(struct boot_entry *entry) {
 		strcat(initrd, entry->initrd);
 		strcpy(dtb, "/boot/");
 		strcat(dtb, entry->dtb);
+        strcat(cmdline, entry->options);
+        strcpy(cmdline, " ABM.bootloader=1");
 
-		return boot_linux_from_ext2(linux, initrd, dtb, entry->options); // only returns on error
+		return boot_linux_from_ext2(linux, initrd, dtb, cmdline); // only returns on error
 	}
 }
 
