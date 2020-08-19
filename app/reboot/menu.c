@@ -118,10 +118,10 @@ bool keyboard_read(lv_indev_drv_t * drv, lv_indev_data_t*data){
 
 int menu_thread(void *arg) {
     //Create menu object
-    menu = lv_obj_create(NULL, NULL);
+    //menu = lv_obj_create(NULL, NULL);
 
     //Load menu object
-    lv_scr_load(menu);
+    //lv_scr_load(menu);
 
     //Get entry list and num of boot entries
     num_of_boot_entries = get_entry_count();
