@@ -11,12 +11,35 @@
 struct lk2nd_device lk2nd_dev = {0};
 extern struct board_data board;
 
+static void dump_board()
+{
+	unsigned i;
+
+	dprintf(INFO, "Board: platform: %u, foundry: %#x, platform_version: %#x, "
+		      "platform_hw: %#x, platform_subtype: %#x, target: %#x, "
+		      "baseband: %#x, platform_hlos_subtype: %#x\n",
+		board.platform, board.foundry_id, board.platform_version,
+		board.platform_hw, board.platform_subtype, board.target,
+		board.baseband, board.platform_hlos_subtype);
+
+	for (i = 0; i < MAX_PMIC_DEVICES; ++i) {
+		if (board.pmic_info[i].pmic_type == PMIC_IS_INVALID)
+			continue;
+
+		dprintf(INFO, "pmic_info[%u]: type: %#x, version: %#x, target: %#x\n",
+			i, board.pmic_info[i].pmic_type,
+			board.pmic_info[i].pmic_version,
+			board.pmic_info[i].pmic_target);
+	}
+}
+
 static void update_board_id(struct board_id *board_id)
 {
 	uint32_t hw_id = board_id->variant_id & 0xff;
 	uint32_t hw_subtype = board_id->platform_subtype & 0xff;
 	uint32_t target_id = board_id->variant_id & 0xffff00;
 
+	/* See platform_dt_absolute_match() for the checks made here */
 	if (board_hardware_id() != hw_id) {
 		dprintf(INFO, "Updating board hardware id: 0x%x -> 0x%x\n",
 			board_hardware_id(), hw_id);
@@ -29,7 +52,7 @@ static void update_board_id(struct board_id *board_id)
 		board.platform_subtype = hw_subtype;
 	}
 
-	if (!(target_id < (board_target_id() & 0xffff00))) {
+	if (!(target_id <= (board_target_id() & 0xffff00))) {
 		target_id |= board_target_id() & ~0xffff00;
 		dprintf(INFO, "Updating board target id: 0x%x -> 0x%x\n",
 			board_target_id(), target_id);
@@ -43,6 +66,13 @@ static const char *strpresuf(const char *str, const char *pre)
 	return strncmp(pre, str, len) == 0 ? str + len : NULL;
 }
 
+static inline void parse_arg(const char *str, const char *pre, const char **out)
+{
+	const char *val = strpresuf(str, pre);
+	if (val)
+		*out = strdup(val);
+}
+
 static void parse_boot_args(void)
 {
 	char *saveptr;
@@ -50,9 +80,13 @@ static void parse_boot_args(void)
 
 	char *arg = strtok_r(args, " ", &saveptr);
 	while (arg) {
-		const char *val;
-		if ((val = strpresuf(arg, "androidboot.bootloader="))) {
-			lk2nd_dev.bootloader = strdup(val);
+		const char *aboot = strpresuf(arg, "androidboot.");
+		if (aboot) {
+			parse_arg(aboot, "device=", &lk2nd_dev.device);
+			parse_arg(aboot, "bootloader=", &lk2nd_dev.bootloader);
+			parse_arg(aboot, "serialno=", &lk2nd_dev.serialno);
+			parse_arg(aboot, "carrier=", &lk2nd_dev.carrier);
+			parse_arg(aboot, "radio=", &lk2nd_dev.radio);
 		}
 
 		arg = strtok_r(NULL, " ", &saveptr);
@@ -76,6 +110,32 @@ static const char *fdt_copyprop_str(const void *fdt, int offset, const char *pro
 	return result;
 }
 
+static bool match_string(const char *s, const char *match, size_t len)
+{
+	len = strnlen(match, len);
+
+	if (len > 0) {
+		if (match[len-1] == '*') {
+			if (len > 1 && match[0] == '*')
+				// *contains*
+				return !!strstrl(s, match + 1, len - 2);
+
+			// prefix* (starts with)
+			len -= 2; // Don't match null terminator and '*'
+		} else if (match[0] == '*') {
+			// *suffix (ends with)
+			size_t slen = strlen(s);
+			if (slen < --len)
+				return false;
+
+			++match; // Skip '*'
+			s += slen - len; // Move to end of string
+		}
+	}
+
+	return strncmp(s, match, len + 1) == 0;
+}
+
 static bool lk2nd_device_match(const void *fdt, int offset)
 {
 	int len;
@@ -89,15 +149,18 @@ static bool lk2nd_device_match(const void *fdt, int offset)
 			return false;
 		}
 
-		if (len > 1 && val[len-2] == '*')
-			len -= 2; // Match prefix only
-		if (strncmp(lk2nd_dev.bootloader, val, len) == 0)
-			return true;
-
-		return false;
+		return match_string(lk2nd_dev.bootloader, val, len);
 	}
 
-	return true; // No bootloader property
+	val = fdt_getprop(fdt, offset, "lk2nd,match-cmdline", &len);
+	if (val && len > 0) {
+		if (!lk2nd_dev.cmdline)
+			return false;
+
+		return match_string(lk2nd_dev.cmdline, val, len);
+	}
+
+	return true; // No match property
 }
 
 static int lk2nd_find_device_offset(const void *fdt)
@@ -115,7 +178,7 @@ static int lk2nd_find_device_offset(const void *fdt)
 	return offset;
 }
 
-void lk2nd_parse_device_node(const void *fdt)
+static void lk2nd_parse_device_node(const void *fdt)
 {
 	int offset = lk2nd_find_device_offset(fdt);
 	if (offset < 0) {
@@ -123,13 +186,19 @@ void lk2nd_parse_device_node(const void *fdt)
 		return;
 	}
 
+#ifdef GPIO_I2C_BUS_COUNT
 	lk2nd_samsung_muic_reset(fdt, offset);
+#endif
+	lk2nd_motorola_smem_write_unit_info(fdt, offset);
 
 	lk2nd_dev.model = fdt_copyprop_str(fdt, offset, "model");
 	if (lk2nd_dev.model)
 		dprintf(INFO, "Device model: %s\n", lk2nd_dev.model);
 	else
 		dprintf(CRITICAL, "Device node is missing 'model' property\n");
+
+	if (dev_tree_get_board_id(fdt, offset, &lk2nd_dev.board_id) == 0)
+		update_board_id(&lk2nd_dev.board_id);
 }
 
 
@@ -153,9 +222,8 @@ int lk2nd_fdt_parse_early_uart(void)
 	return -1;
 }
 
-void lk2nd_fdt_parse(void)
+static void lk2nd_fdt_parse(void)
 {
-	struct board_id board_id;
 	void *fdt = (void*) lk_boot_args[2];
 	if (!fdt)
 		return;
@@ -165,9 +233,11 @@ void lk2nd_fdt_parse(void)
 		return;
 	}
 
-	if (dev_tree_get_board_id(fdt, &board_id) == 0) {
-		update_board_id(&board_id);
-	}
+	lk2nd_dev.fdt = fdt;
+	if (dev_tree_get_board_id(fdt, 0, &lk2nd_dev.board_id) == 0)
+		update_board_id(&lk2nd_dev.board_id);
+	else
+		dprintf(INFO, "No valid qcom,board-id in device tree\n");
 
 	lk2nd_dev.cmdline = dev_tree_get_boot_args(fdt);
 	if (lk2nd_dev.cmdline) {
@@ -179,4 +249,10 @@ void lk2nd_fdt_parse(void)
 	}
 
 	lk2nd_parse_device_node(fdt);
+}
+
+void lk2nd_init(void)
+{
+	dump_board();
+	lk2nd_fdt_parse();
 }

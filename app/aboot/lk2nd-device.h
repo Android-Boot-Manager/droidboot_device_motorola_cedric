@@ -6,16 +6,25 @@
 #include <dev_tree.h>
 
 struct lk2nd_device {
-	const char *cmdline;
-	const char *bootloader;
+	void *fdt;
+	struct board_id board_id;
+
 	const char *model;
+	const char *cmdline;
+
+	const char *device;
+	const char *bootloader;
+	const char *serialno;
+	const char *carrier;
+	const char *radio;
 };
 
 extern struct lk2nd_device lk2nd_dev;
 
-void lk2nd_fdt_parse(void);
+void lk2nd_init(void);
 int lk2nd_fdt_parse_early_uart(void);
 
 void lk2nd_samsung_muic_reset(const void *fdt, int offset);
+void lk2nd_motorola_smem_write_unit_info(const void *fdt, int offset);
 
 #endif

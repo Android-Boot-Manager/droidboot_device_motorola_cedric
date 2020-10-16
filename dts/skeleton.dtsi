@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0-only
+// Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+	aliases { };
+
+	memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "memory";
+		reg = <0 0>;
+	};
+};

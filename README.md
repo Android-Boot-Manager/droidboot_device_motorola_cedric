@@ -1,5 +1,5 @@
 # lk2nd
-lk2nd is a bootloader for Qualcomm MSM devices (at the moment only MSM8916),
+lk2nd is a bootloader for Qualcomm MSM devices (at the moment only MSM8916 and MSM8939),
 based on the [CodeAurora Little Kernel fork](https://source.codeaurora.org/quic/la/kernel/lk/).
 It provides an Android Fastboot interface on devices where the stock bootloader
 does not provide Fastboot (e.g. Samsung).
@@ -13,17 +13,40 @@ The real Android boot image is placed into the boot partition with 1 MB offset,
 and then loaded by lk2nd.
 
 ## Supported SoCs
-- MSM8916
+- `msm8916-secondary`: MSM8216, MSM8916, MSM8929, MSM8939
+- `msm8974-secondary`: MSM8974
+- `msm8226-secondary`: MSM8226, MSM8926
+
+See [Chipsets](https://github.com/efidroid/projectmanagement/wiki/%5BReference%5D-Chipsets)
+page on the EFIDroid wiki for an exact mapping of LK targets to SoCs.
 
 ### Supported devices
+- Alcatel OneTouch Idol 3 (5.5) - 6045*
+- Asus Zenfone 2 Laser (720p) - Z00L
+- Asus Zenfone 2 Laser (1080p) - Z00T
+- BQ Aquaris X5 (paella, picmt)
+- Lenovo PHAB Plus - PB1-770M, PB1-770N
+- LG K10 (m216) - K420 (see notes in `dts/msm8916-lg.dts` for now)
+- Marshall London
+- Motorola Moto E (2015, surnia)
 - Motorola Moto G4 Play (harpia)
 - Samsung Galaxy A3 (2015) - SM-A300FU
-- Samsung Galaxy A5 (2015) - SM-A500FU
-- Samsung Galaxy J5 (2016) - SM-J510FN
+- Samsung Galaxy A5 (2015) - SM-A500F, SM-A500FU
+- Samsung Galaxy Grand Prime - SM-G530W
+- Samsung Galaxy J3 (2016) - SM-J3109
+- Samsung Galaxy J3 Pro - SM-J3110, SM-J3119
+- Samsung Galaxy J5 (2015) - SM-J5008, SM-J500F, SM-J500FN, SM-J500H
+- Samsung Galaxy J5 (2016) - SM-J5108, SM-J510F, SM-J510FN
+- Samsung Galaxy J7 (2015) - SM-J7008, SM-J700P
+- Samsung Galaxy On7 (2015) - SM-G6000
 - Samsung Galaxy S4 Mini Value Edition - GT-I9195I
+- Samsung Galaxy Tab 4 10.1 (2015) - SM-T533
 - Samsung Galaxy Tab A 8.0 LTE (2015) - SM-T357W
 - Samsung Galaxy Tab A 9.7 WiFi (2015) - SM-T550
+- Vodafone Smart prime 6
 - Wileyfox Swift
+- Xiaomi Mi 4i
+- Xiaomi Redmi 2 (wt86047, wt88047)
 
 ## Installation
 1. Download `lk2nd.img` (available in [Releases](https://github.com/msm8916-mainline/lk2nd/releases))
@@ -51,8 +74,11 @@ the boot partition).
 Other fastboot commands work normally.
 
 ## Building
+Check [Supported SoCs](#supported-socs) for the make target you should use below.
+(It depends on the SoC of your device.)
+
 ```
-$ make TOOLCHAIN_PREFIX=arm-none-eabi- msm8916-secondary
+$ make TOOLCHAIN_PREFIX=arm-none-eabi- msmXXXX-secondary
 ```
 
 **Requirements:**
@@ -70,10 +96,27 @@ Replace `TOOLCHAIN_PREFIX` with the path to your tool chain.
   `qcom,msm-id`/`qcom,board-id` from downstream.
 
 ### To other SoCs
-- Cherry-pick changes
-- Make some changes
+Qualcomm maintains separate branches for various groups of SoCs. The branches can
+be seen on the [Chipsets](https://github.com/efidroid/projectmanagement/wiki/%5BReference%5D-Chipsets)
+page on the EFIDroid wiki. This version of lk2nd is based on the LA.BR branch for
+MSM8916. There is a [fork for MSM8953 based on the LA.UM branch](https://github.com/msm8953-mainline/lk2nd).
 
-(TODO: Document this properly)
+The bootloader will work best when you use the correct branch for your device.
+Older platforms are usually kept around by Qualcomm but barely tested and may
+not work, or not even compile.
+
+However, if make files for your SoC are present in this version or the MSM8953 fork
+you can try to enable it and see if it works well enough for you. Otherwise you
+would need to go through the Git history and pick the relevant commits to another
+branch from https://source.codeaurora.org/quic/la/kernel/lk/.
+
+To enable support for a SoC that is already present in this repository:
+
+1. Create a new `project/<target>-secondary.mk` which looks like the others.
+2. Try to compile it and fix all the compile errors.
+3. Try to run it and hope that it works.
+
+Good luck!
 
 ## Contact
 Ping `minecrell`/`Mis012` on [`#postmarketos-mainline`](https://wiki.postmarketos.org/wiki/Matrix_and_IRC).

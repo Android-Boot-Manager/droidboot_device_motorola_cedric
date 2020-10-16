@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+/include/ "msm8916.dtsi"
+
+/ {
+	// This is used by the bootloader to find the correct DTB
+	qcom,msm-id = <206 0>;
+	qcom,board-id = <0xCE08FF01 5>;
+
+	j5nlte-eur {
+		model = "Samsung Galaxy J5 2015 (SM-J500FN)";
+		compatible = "samsung,j5nlte-eur", "qcom,msm8916", "lk2nd,device";
+		lk2nd,match-bootloader = "J500FN*";
+		
+		samsung,muic-reset {
+			i2c-gpios = <105 106>;
+			i2c-address = <0x25>;
+		};
+	};
+
+	j3lte-chnctc {
+		model = "Samsung Galaxy J3 2016 (SM-J3109)";
+		compatible = "samsung,j3lte-chnctc", "qcom,msm8916", "lk2nd,device";
+		lk2nd,match-bootloader = "J3109*";
+		samsung,muic-reset {
+			i2c-gpios = <0 1>;
+			i2c-address = <0x25>;
+		};
+	};
+
+	j5lte-eur {
+		model = "Samsung Galaxy J5 2015 (SM-J500F)";
+		compatible = "samsung,j5lte-eur", "qcom,msm8916", "lk2nd,device";
+		lk2nd,match-bootloader = "J500F*";
+		samsung,muic-reset {
+			i2c-gpios = <105 106>;
+			i2c-address = <0x25>;
+		};
+	};
+};

@@ -1,0 +1,157 @@
+// SPDX-License-Identifier: GPL-2.0
+#include "qcom-apq8064-v2.0.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+/ {
+	model = "Htc One M7";
+	compatible = "htc,m7", "qcom,apq8064";
+
+	aliases {
+		serial0 = &gsbi7_serial;
+		serial1 = &gsbi6_serial;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+	};
+
+	ext_3p3v: regulator-fixed@1 {
+		compatible = "regulator-fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-name = "ext_3p3v";
+		regulator-type = "voltage";
+		startup-delay-us = <0>;
+		gpio = <&tlmm_pinmux 77 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+
+	soc {
+		rpm@108000 {
+			regulators {
+				vdd_l1_l2_l12_l18-supply = <&pm8921_s4>;
+				vin_lvs1_3_6-supply = <&pm8921_s4>;
+				vin_lvs4_5_7-supply = <&pm8921_s4>;
+
+
+				vdd_l24-supply = <&pm8921_s1>;
+				vdd_l25-supply = <&pm8921_s1>;
+				vin_lvs2-supply = <&pm8921_s1>;
+
+				vdd_l26-supply = <&pm8921_s7>;
+				vdd_l27-supply = <&pm8921_s7>;
+				vdd_l28-supply = <&pm8921_s7>;
+
+				vdd_ncp-supply = <&pm8921_l6>;
+
+				/* Buck SMPS */
+				s1 {
+					regulator-always-on;
+					regulator-min-microvolt = <1225000>; 
+					regulator-max-microvolt = <1225000>; 
+					qcom,switch-mode-frequency = <3200000>; 
+					bias-pull-down;
+				};
+
+				/* msm otg HSUSB_VDDCX */
+				s3 {
+					regulator-min-microvolt = <500000>; 
+					regulator-max-microvolt = <1150000>; 
+					qcom,switch-mode-frequency = <4800000>; 
+				};
+
+				/*
+				 * msm_sdcc.1-sdc-vdd_io
+				 * tabla2x-slim-CDC_VDDA_RX
+				 * tabla2x-slim-CDC_VDDA_TX
+				 * tabla2x-slim-CDC_VDD_CP
+				 * tabla2x-slim-VDDIO_CDC
+				 */
+				s4 {
+					regulator-min-microvolt	= <1800000>; 
+					regulator-max-microvolt	= <1800000>; 
+					qcom,switch-mode-frequency = <1600000>; 
+					regulator-always-on;
+				};
+
+				/* mipi_dsi.1-dsi1_pll_vdda */
+
+				/* mipi_dsi.1-dsi1_avdd */
+				l11 {
+					regulator-min-microvolt = <3000000>; 
+					regulator-max-microvolt = <3000000>; 
+					bias-pull-down;
+					regulator-always-on;
+				};
+
+				l12 {
+					regulator-min-microvolt = <1200000>; 
+					regulator-max-microvolt = <1200000>; 
+					regulator-always-on;
+				};
+			};
+		};
+
+
+		gsbi@16500000 {
+//			status = "ok";  if you get UART
+			qcom,mode = <GSBI_PROT_I2C_UART>;
+
+			serial@16540000 {
+				status = "ok";
+			};
+		};
+
+		gsbi@16600000 {
+//			status = "ok";  if you get UART
+			qcom,mode = <GSBI_PROT_I2C_UART>;
+
+			serial@16640000 {
+				status = "ok";
+			};
+		};
+
+		/* OTG */
+		usb@12500000 {
+			status = "okay";
+			dr_mode = "otg";
+			ulpi {
+				phy {
+					v3p3-supply = <&pm8921_l3>;
+					v1p8-supply = <&pm8921_l4>;
+				};
+			};
+		};
+
+		amba {
+			/* eMMC */
+			sdcc@12400000 {
+				status = "okay";
+				vmmc-supply = <&pm8921_l5>;
+				vqmmc-supply = <&pm8921_s4>;
+			};
+		};
+
+		imem@2a03f000 {
+			compatible = "syscon", "simple-mfd";
+			reg = <0x2a03f000 0x1000>;
+
+			reboot-mode {
+				compatible = "syscon-reboot-mode";
+				offset = <0x65c>;
+
+				mode-normal	= <0x77665501>;
+				mode-bootloader	= <0x77665500>;
+				mode-recovery	= <0x77665502>;
+			};
+		};
+	};
+};

@@ -616,8 +616,10 @@ static char *concat_args(const char *a, const char *b)
 
 unsigned char *update_cmdline(const char* cmdline)
 {
-	if (lk2nd_dev.cmdline && strstr(cmdline, "androidboot.hardware=qcom"))
-		return cmdline ? concat_args(cmdline, lk2nd_dev.cmdline) : strdup(lk2nd_dev.cmdline);
+	/* Only take cmdline from original bootloader if downstream or lk2nd */
+	if (cmdline && lk2nd_dev.cmdline &&
+	    (strstr(cmdline, "androidboot.hardware=qcom") || strstr(cmdline, "lk2nd")))
+		return concat_args(cmdline, lk2nd_dev.cmdline);
 	return update_cmdline0(cmdline);
 }
 
@@ -3864,7 +3866,7 @@ void aboot_init(const struct app_descriptor *app)
 
 	ASSERT((MEMBASE + MEMSIZE) > MEMBASE);
 
-	lk2nd_fdt_parse();
+	lk2nd_init();
 	read_device_info(&device);
 	read_allow_oem_unlock(&device);
 

@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+/include/ "msm8916.dtsi"
+
+/ {
+	// This is used by the bootloader to find the correct DTB
+	qcom,msm-id = <268 0>;
+	qcom,board-id = <0x0C01FF01 4>;
+
+	j7-chn {
+		model = "Samsung Galaxy J7 2015 (SM-J7008)";
+		compatible = "samsung,j7-chn", "qcom,msm8929", "lk2nd,device";
+		lk2nd,match-bootloader = "J7008*";
+		samsung,muic-reset {
+			i2c-gpios = <31 32>;
+			i2c-address = <0x25>;
+		};
+	};
+
+	on7lte-chn {
+		model = "Samsung Galaxy On7 2015 (SM-G6000)";
+		compatible = "samsung,on7lte-chn", "qcom,msm8916", "lk2nd,device";
+		lk2nd,match-bootloader = "G6000*";
+
+		// The stock Samsung bootloader seems to pick <0x0C01FF01 4> as the board id as opposed to <0xCE08FF01 3>
+		// This line should fix that
+		qcom,board-id = <0xCE08FF01 3>;
+
+		samsung,muic-reset {
+			i2c-gpios = <105 106>;
+			i2c-address = <0x25>;
+		};
+	};
+};

@@ -19,13 +19,13 @@ KEYS_USE_GPIO_KEYPAD := 1
 DEFINES += DISPLAY_SPLASH_SCREEN=1
 DEFINES += DISPLAY_TYPE_MIPI=1
 DEFINES += DISPLAY_TYPE_HDMI=1
+DEFINES += DISPLAY_TYPE_MDSS=1
 
 MODULES += \
 	dev/keys \
 	dev/pmic/pm8921 \
 	dev/ssbi \
 	lib/ptable \
-	dev/panel/msm \
 
 DEFINES += \
 	MEMSIZE=$(MEMSIZE) \
