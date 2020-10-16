@@ -32,9 +32,10 @@
 #include <openssl/evp.h>
 #include <kernel/mutex.h>
 
-#define SELECT_OPTION_MAX	5
+#define SELECT_OPTION_MAX	7
 
 enum display_menu_type {
+	DISPLAY_MENU_BLUE,
 	DISPLAY_MENU_YELLOW = 0,
 	DISPLAY_MENU_ORANGE,
 	DISPLAY_MENU_RED,

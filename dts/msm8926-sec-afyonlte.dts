@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/dts-v1/;
+
+/include/ "msm8226.dtsi"
+
+/ {
+	// This is used by the bootloader to find the correct DTB
+	qcom,msm-id = <200 0>;
+	qcom,board-id = <0x8 0>;
+
+	afyonlte {
+		model = "Samsung Galaxy Avant";
+		compatible = "samsung,afyonlte", "qcom,msm8226", "lk2nd,device";
+		lk2nd,match-bootloader = "G386W*";
+	};
+};

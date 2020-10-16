@@ -87,6 +87,7 @@ struct boot_verify_info boot_verify_info[] = {
 			[DISPLAY_MENU_RED] = {FBCON_RED_MSG, RED_WARNING_MSG},
 			[DISPLAY_MENU_YELLOW] = {FBCON_YELLOW_MSG, YELLOW_WARNING_MSG},
 			[DISPLAY_MENU_ORANGE] = {FBCON_ORANGE_MSG, ORANGE_WARNING_MSG},
+			[DISPLAY_MENU_BLUE] = {FBCON_BLUE_MSG, BLUE_WARNING_MSG},
 			[DISPLAY_MENU_LOGGING] = {FBCON_RED_MSG, LOGGING_WARNING_MSG},
 			[DISPLAY_MENU_EIO] = {FBCON_RED_MSG, EIO_WARNING_MSG}};
 #endif
@@ -102,7 +103,9 @@ static char *fastboot_option_menu[] = {
 		[0] = "START\n",
 		[1] = "Restart bootloader\n",
 		[2] = "Recovery mode\n",
-		[3] = "Power off\n"};
+		[3] = "Power off\n",
+		[4] = "Advanced Menu\n",
+		[5] = "Credits\n"};
 
 static int big_factor = 2;
 static int common_factor = 1;
@@ -383,6 +386,8 @@ void display_fastboot_menu_renew(struct select_msg_info *fastboot_msg_info)
 			msg_type = FBCON_GREEN_MSG;
 			break;
 		case 1:
+			msg_type = FBCON_BLUE_MSG;
+			break;
 		case 2:
 			msg_type = FBCON_RED_MSG;
 			break;
@@ -394,8 +399,7 @@ void display_fastboot_menu_renew(struct select_msg_info *fastboot_msg_info)
 	display_fbcon_menu_message(fastboot_option_menu[option_index],
 		msg_type, big_factor);
 	fbcon_draw_line(msg_type);
-	display_fbcon_menu_message("\n\nPress volume key to select, and "\
-		"press power key to select\n\n", FBCON_COMMON_MSG, common_factor);
+	display_fbcon_menu_message("\n\nPress volume key to select, and\npress power key to select\n\n", FBCON_COMMON_MSG, common_factor);
 
 	display_fbcon_menu_message("FASTBOOT MODE\n", FBCON_RED_MSG, common_factor);
 
@@ -446,6 +450,9 @@ void display_fastboot_menu_renew(struct select_msg_info *fastboot_msg_info)
 		is_device_locked()? "locked":"unlocked");
 	display_fbcon_menu_message(msg, FBCON_RED_MSG, common_factor);
 
+	snprintf(msg, sizeof(msg), "MSM8226 support built WolfLink115 with\nhelp from the pmos mainlining group!");
+	display_fbcon_menu_message(msg, FBCON_BLUE_MSG, common_factor);
+
 	fastboot_msg_info->info.msg_type = DISPLAY_MENU_FASTBOOT;
 	fastboot_msg_info->info.option_num = len;
 	fastboot_msg_info->info.option_index = option_index;
@@ -471,7 +478,7 @@ static void display_menu_thread_start(struct select_msg_info *msg_info)
 		thr = thread_create("selectkeydetect", &select_msg_keys_detect,
 			(void*)msg_info, DEFAULT_PRIORITY, DEFAULT_STACK_SIZE);
 		if (!thr) {
-			dprintf(CRITICAL, "ERROR: creat device status detect thread failed!!\n");
+			dprintf(CRITICAL, "ERROR: create device status detect thread failed!!\n");
 			return;
 		}
 		thread_resume(thr);
@@ -513,7 +520,7 @@ void display_fastboot_menu()
 	msg_lock_init();
 	mutex_acquire(&fastboot_menu_msg_info->msg_lock);
 
-	/* There are 4 pages for fastboot menu:
+	/* There are 6 pages for fastboot menu:
 	 * Page: Start/Fastboot/Recovery/Poweroff
 	 * The menu is switched base on the option index
 	 * Initialize the option index and last_msg_type

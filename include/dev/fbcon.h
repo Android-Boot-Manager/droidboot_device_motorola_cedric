@@ -56,6 +56,7 @@
 
 enum fbcon_msg_type {
 	/* type for menu */
+	FBCON_BLUE_MSG,
 	FBCON_COMMON_MSG = 0,
 	FBCON_UNLOCK_TITLE_MSG,
 	FBCON_TITLE_MSG,

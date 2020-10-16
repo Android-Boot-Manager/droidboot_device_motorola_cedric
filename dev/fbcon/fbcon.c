@@ -92,6 +92,7 @@ static struct fb_color		fb_color_formats_555[] = {
 					[FBCON_ORANGE_MSG] = {RGB565_ORANGE, RGB565_BLACK},
 					[FBCON_RED_MSG] = {RGB565_RED, RGB565_BLACK},
 					[FBCON_GREEN_MSG] = {RGB565_GREEN, RGB565_BLACK},
+					[FBCON_BLUE_MSG] = {RGB565_BLUE, RGB565_BLACK},
 					[FBCON_SELECT_MSG_BG_COLOR] = {RGB565_WHITE, RGB565_BLUE}};
 
 static struct fb_color		fb_color_formats_888[] = {
@@ -103,6 +104,7 @@ static struct fb_color		fb_color_formats_888[] = {
 					[FBCON_ORANGE_MSG] = {RGB888_ORANGE, RGB888_BLACK},
 					[FBCON_RED_MSG] = {RGB888_RED, RGB888_BLACK},
 					[FBCON_GREEN_MSG] = {RGB888_GREEN, RGB888_BLACK},
+					[FBCON_BLUE_MSG] = {RGB888_BLUE, RGB888_BLACK},
 					[FBCON_SELECT_MSG_BG_COLOR] = {RGB888_WHITE, RGB888_BLUE}};
 
 
